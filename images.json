@@ -1,0 +1,32 @@
+{
+    "images": [
+        {
+            "name": "lab-puppy.jpg",
+            "size": "442KB",
+            "type": "JPEG",
+            "metadata": {
+                "description": "A lab puppy in a field of lavender.",
+                "author": "chiplanay"
+
+            }
+        },
+        {
+            "name": "lotus.jpg",
+            "size": "1.5MB",
+            "type": "JPEG",
+            "metadata": {
+                "description": "A beautiful pink lotus flower.",
+                "author": "Hong Zhang"
+            }
+        },
+        {
+            "name": "teddybear.jpg",
+            "size": "319KB",
+            "type": "JPEG",
+            "metadata": {
+                "description": "A teddybear puppy with a rose.",
+                "author": "Rayleen Slegers"
+            }
+        }
+    ]
+}
