@@ -2,15 +2,16 @@
   "name": "image-lamda",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "index.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node index.mjs"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.1.4",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "node-fetch": "^3.3.1"
   }
 }
