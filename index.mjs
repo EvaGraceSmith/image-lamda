@@ -1,85 +1,57 @@
-//This is the lambda function that will be triggered when an image is uploaded to the S3 bucket.
-import {S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { Response } from 'node-fetch';
 
-// this is the handler that will be called by the lambda function
 export const handler = async(event) => {
-  // this creates a client connection to S3
-  const s3Client = new S3Client({region: 'us-east-1'});
+  //create  our s3 connection capability
+  let s3Client = new S3Client({region: 'us-east-1'});
 
-  // these are the params for the GetObjectCommand
-  const params = {
-    Key: event.Records[0].s3.object.key,
-    Bucket: 'images-bucket',
+  let name = event.Records[0].s3.object.key;
+  let size = event.Records[0].s3.object.size;
+  let type = '.jpg';
+  let newImageDetails = { name, size, type };
+  console.log('new image details', newImageDetails);
+
+  // see docs: https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-s3/classes/getobjectcommand.html
+  let input = {
+    Bucket: 'evagrace-lab17',
+    Key: 'images.json',
   };
 
-  console.log('new event info', params);
+  let imageDetails=[];
+  try {
+    let results = await s3Client.send(new GetObjectCommand(input));
+    let response = new Response(results.Body); // satisfies the result "promise"
+    let retrievedImageDetails = await response.json(); // converts response into usable array
+    imageDetails = retrievedImageDetails; // at this point we have the array if json exists
+    console.log('our image details array', imageDetails);
+  }catch(e){
+    console.log('get object error', e);
+    imageDetails = [];
+  }
 
-  // this is the data that will be returned to the client
-  let data;
+  imageDetails.images.push(newImageDetails);
+  console.log('our image details array', imageDetails);
 
-  // this is the data that will be stored in the json file
-  let imageData = {
-    name: event.Records[0].s3.object.key,
-    size: `${event.Records[0].s3.object.size} mbytes`,
-    type: 'jpg',
+  let stringifiedDetails = JSON.stringify(imageDetails, undefined, '  ');
+  console.log('i am here');
+  let putInput = {
+    ...input,
+    Body: stringifiedDetails,
+    ContentType: 'application/json', //For JSON, it's always this
   };
-
-  // this is the try catch block that will get the data from the json file
-  try {
-    // https://stackoverflow.com/questions/36942442/how-to-get-response-from-s3-getobject-in-node-js
-
-    let s3Results = await s3Client.send(new GetObjectCommand(params));
-    const response = new Response(s3Results.Body);
-    data = await response.json();
-
-
-  }catch(err){
-    console.log('get data Event', JSON.stringify(event, undefined, '  '));
-    console.log('get data error', err);
-  }
-
-  console.log('this is my data', data);
-
+  console.log('put input object', putInput);
 
   try {
-    //find image in s3 bucket
-    let findImage = data.objects.find((image) => image.name === imageData.name);
-    console.log('find image', findImage);
-    if (findImage) {
-      data.objects[findImage] = imageData;
-    } else {
-      data.objects.push(imageData);
-    }
+    console.log('i am here too');
 
-    // this is updating the json file in the s3 bucket
-    const newParams = {
-      ...params,
-      Body: JSON.stringify(data),
-      ContentType: 'application/json',
-    };
-
-    //this is the command to update the json file in the s3 bucket
-    let news3Results = await s3Client.send(new PutObjectCommand(newParams));
-    console.log('new s3 results', news3Results);
-    const jsonResponse = new Response(news3Results.Body);
-    console.log('new response', jsonResponse);
-
-  } catch (err) {
-    console.log('put data Event', JSON.stringify(event, undefined, '  '));
-    console.log('put data error', err);
+    await s3Client.send(new PutObjectCommand(putInput));
+  } catch(e){
+    console.warn('failed to put', e);
   }
-
-
-  console.log('this is my data', data);
-
-
+  // TODO implement
   const response = {
     statusCode: 200,
-    body: data,
+    body: stringifiedDetails,
   };
-
   return response;
 };
-
-
